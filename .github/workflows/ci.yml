@@ -1,4 +1,7 @@
 name: CI
+permissions:
+  contents: read
+
 on:
   pull_request:
   workflow_call:
@@ -16,7 +19,4 @@ jobs:
       - run: npm test
       - run: npm run build
       - run: npx cdk synth -q -c discord-client-id=0
-        env:
-          CDK_DEFAULT_ACCOUNT: "000000000000"
-          CDK_DEFAULT_REGION: us-east-1
       - run: docker build -t aws-discord-mcp .

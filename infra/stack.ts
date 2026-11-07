@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Aws, CfnOutput, Duration, RemovalPolicy, SecretValue, Stack, type StackProps } from "aws-cdk-lib";
+import { Annotations, Aws, CfnOutput, Duration, RemovalPolicy, SecretValue, Stack, type StackProps } from "aws-cdk-lib";
 import * as agentcore from "aws-cdk-lib/aws-bedrockagentcore";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
@@ -25,6 +25,7 @@ export interface DiscordMcpStackProps extends StackProps {
 export class DiscordMcpStack extends Stack {
   constructor(scope: Construct, id: string, props: DiscordMcpStackProps) {
     super(scope, id, props);
+    if (!props.discordClientId) Annotations.of(this).addError("Set the Discord client ID: -c discord-client-id=...");
 
     const botToken = secrets.Secret.fromSecretNameV2(this, "BotToken", props.botTokenSecretName);
 

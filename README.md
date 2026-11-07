@@ -66,21 +66,19 @@ aws secretsmanager create-secret --name aws-discord-mcp/discord-client-secret --
 
 ### 2. Deploy
 
-From GitHub Actions (`.github/workflows/deploy.yml`, on push to `main`), with the existing CI role. Set these repository variables:
+GitHub Actions (`.github/workflows/deploy.yml`) deploys on push to `main`, in the `aws` environment. It follows the org rules: GitHub-owned actions pinned to a SHA, and OIDC login with `scripts/ci-aws-login.sh` into role `github-actions-discord-mcp`.
 
-| Variable | Value |
-| --- | --- |
-| `AWS_CI_ROLE_ARN` | ARN of the CI role (GitHub OIDC) |
-| `AWS_REGION` | AgentCore region, e.g. `us-east-1` |
-| `DISCORD_CLIENT_ID` | Discord application client ID |
-| `DISCORD_READ_ONLY` | optional, `true` |
-| `DISCORD_ALLOWED_GUILDS` | optional, `id1,id2` |
+One-time setup:
+
+1. `npm run ci-role` with an admin profile. It creates the GitHub Actions role.
+2. Run `just apply` in `github-config` so the repo gets its `aws` environment (`AWS_ACCOUNT_ID`, `AWS_REGION`).
+3. Add the variable `DISCORD_CLIENT_ID` to the `aws` environment. Optional: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
 
 Or from your machine (needs Docker for the arm64 image):
 
 ```sh
 npm ci
-AWS_PROFILE=aws-abaschen npx cdk deploy -c discord-client-id=<id>
+npx cdk deploy aws-discord-mcp -c discord-client-id=<id>
 ```
 
 ### 3. Discord redirect
