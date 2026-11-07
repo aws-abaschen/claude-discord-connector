@@ -22,7 +22,7 @@ export class Discord {
         headers: {
           Authorization: `Bot ${this.token}`,
           "Content-Type": "application/json",
-          "User-Agent": "DiscordBot (https://github.com/aws-abaschen/claude-discord-connector, 1.0.0)",
+          "User-Agent": "DiscordBot (https://github.com/aws-abaschen/aws-discord-mcp, 1.0.0)",
         },
         body: body === undefined ? undefined : JSON.stringify(body),
       });

@@ -1,7 +1,7 @@
 version = 0.1
 
 [default.deploy.parameters]
-stack_name = "claude-discord-connector"
+stack_name = "aws-discord-mcp"
 resolve_s3 = true
 capabilities = "CAPABILITY_IAM"
 profile = "aws-abaschen"

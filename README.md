@@ -1,4 +1,4 @@
-# claude-discord-connector
+# aws-discord-mcp
 
 Discord connector for Claude Code. An MCP server that lets Claude read and post in Discord through a bot.
 
@@ -41,7 +41,7 @@ Set both tokens in the secret. `mcpAuthToken` is the bearer token Claude Code se
 ```sh
 export AWS_PROFILE=aws-abaschen
 MCP_TOKEN=$(openssl rand -hex 32)
-ARN=$(aws cloudformation describe-stacks --stack-name claude-discord-connector \
+ARN=$(aws cloudformation describe-stacks --stack-name aws-discord-mcp \
   --query "Stacks[0].Outputs[?OutputKey=='SecretArn'].OutputValue" --output text)
 aws secretsmanager put-secret-value --secret-id "$ARN" \
   --secret-string "{\"discordBotToken\":\"$DISCORD_BOT_TOKEN\",\"mcpAuthToken\":\"$MCP_TOKEN\"}"
@@ -50,7 +50,7 @@ aws secretsmanager put-secret-value --secret-id "$ARN" \
 Add it to Claude Code:
 
 ```sh
-URL=$(aws cloudformation describe-stacks --stack-name claude-discord-connector \
+URL=$(aws cloudformation describe-stacks --stack-name aws-discord-mcp \
   --query "Stacks[0].Outputs[?OutputKey=='McpUrl'].OutputValue" --output text)
 claude mcp add --transport http discord "$URL" --header "Authorization: Bearer $MCP_TOKEN"
 ```

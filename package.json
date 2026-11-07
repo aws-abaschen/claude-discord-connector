@@ -1,5 +1,5 @@
 {
-  "name": "claude-discord-connector",
+  "name": "aws-discord-mcp",
   "version": "1.0.0",
   "description": "Discord MCP connector for Claude Code, serverless on AWS Lambda",
   "scripts": {
@@ -24,7 +24,7 @@
   },
   "type": "module",
   "bin": {
-    "claude-discord-connector": "dist/stdio.mjs"
+    "aws-discord-mcp": "dist/stdio.mjs"
   },
   "files": [
     "dist/stdio.mjs"
