@@ -21,6 +21,11 @@ new DiscordMcpStack(app, "aws-discord-mcp", {
 });
 
 // Deployed once by hand with an admin profile: npm run ci-role
-new CiRoleStack(app, "DiscordMcpCiRole", { env, repo: "discord-mcp", stacks: ["aws-discord-mcp"] });
+new CiRoleStack(app, "DiscordMcpCiRole", {
+  env,
+  repo: "discord-mcp",
+  stacks: ["aws-discord-mcp"],
+  environment: "discord",
+});
 
 Tags.of(app).add("repo", "baschenis-cloud-ci/discord-mcp");

@@ -21,7 +21,8 @@ jobs:
     needs: ci
     # AgentCore Runtime needs an arm64 image.
     runs-on: ubuntu-24.04-arm
-    environment: aws # vars are only populated in the environment
+    # Discord vars and secrets. AWS_ACCOUNT_ID and AWS_REGION are org variables.
+    environment: discord
     env:
       AWS_REGION: ${{ vars.AWS_REGION }}
       AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}

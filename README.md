@@ -67,13 +67,12 @@ Discord client secret: GitHub secret `DISCORD_CLIENT_SECRET`. The deploy passes 
 
 ### 2. Deploy
 
-GitHub Actions (`.github/workflows/deploy.yml`) deploys on push to `main`, in the `aws` environment. It follows the org rules: GitHub-owned actions pinned to a SHA, and OIDC login with `scripts/ci-aws-login.sh` into role `github-actions-discord-mcp`.
+GitHub Actions (`.github/workflows/deploy.yml`) deploys on push to `main`, in the `discord` environment. It follows the org rules: GitHub-owned actions pinned to a SHA, and OIDC login with `scripts/ci-aws-login.sh` into role `github-actions-discord-mcp`.
 
 One-time setup:
 
 1. `npm run ci-role` with an admin profile. It creates the GitHub Actions role.
-2. Run `just apply` in `github-config` so the repo gets its `aws` environment (`AWS_ACCOUNT_ID`, `AWS_REGION`).
-3. Add the GitHub variable `DISCORD_CLIENT_ID` and the GitHub secret `DISCORD_CLIENT_SECRET`. Optional: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
+2. In the `discord` environment: variable `DISCORD_CLIENT_ID`, secret `DISCORD_CLIENT_SECRET`. Optional: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
 
 Or from your machine (needs Docker for the arm64 image):
 

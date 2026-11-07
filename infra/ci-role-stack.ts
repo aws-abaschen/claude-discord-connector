@@ -7,11 +7,12 @@ export interface CiRoleStackProps extends StackProps {
   repo: string;
   /** Stacks the role may describe. */
   stacks: string[];
+  /** GitHub environment the deploy job runs in. */
+  environment: string;
 }
 
 const ORG = "baschenis-cloud-ci";
 const ORG_ID = "342063361";
-const ENVIRONMENT = "aws";
 
 /** Role assumed by GitHub Actions via OIDC. It can only use the CDK bootstrap roles. */
 export class CiRoleStack extends Stack {
@@ -27,7 +28,7 @@ export class CiRoleStack extends Stack {
     // Same subjects as the other repos of the org: plain and immutable (owner@id/repo@id) forms.
     const subjects = [`${ORG}/${props.repo}`, `${ORG}@${ORG_ID}/${props.repo}@*`].flatMap((r) => [
       `repo:${r}:pull_request`,
-      `repo:${r}:environment:${ENVIRONMENT}`,
+      `repo:${r}:environment:${props.environment}`,
     ]);
 
     const role = new iam.Role(this, "DeployRole", {
