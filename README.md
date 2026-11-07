@@ -1,8 +1,8 @@
 # aws-discord-mcp
 
-Discord connector for Claude Code. An MCP server that lets Claude read and post in Discord through a bot.
+Discord MCP server for Claude Code. Lets Claude read and post in Discord through a bot.
 
-Runs serverless on AWS Lambda (Function URL, stateless Streamable HTTP), or locally over stdio.
+Run it locally with Docker, or host it on AWS with Amazon Bedrock AgentCore.
 
 ## Tools
 
@@ -20,55 +20,86 @@ Runs serverless on AWS Lambda (Function URL, stateless Streamable HTTP), or loca
 `DISCORD_READ_ONLY=true` exposes only the read tools.
 `DISCORD_ALLOWED_GUILDS=id1,id2` restricts servers.
 
-## 1. Create the Discord bot
+## Discord application
 
-1. https://discord.com/developers/applications → New Application → Bot.
-2. Reset and copy the token.
-3. Enable **Message Content Intent**.
-4. OAuth2 → URL Generator: scope `bot`, permissions `View Channels`, `Read Message History`, `Send Messages`, `Send Messages in Threads`, `Create Public Threads`, `Add Reactions`. Open the URL to invite the bot.
+1. https://discord.com/developers/applications → New Application.
+2. **Bot**: reset and copy the token. Enable **Message Content Intent**.
+3. **OAuth2 → URL Generator**: scope `bot`, permissions `View Channels`, `Read Message History`, `Send Messages`, `Send Messages in Threads`, `Create Public Threads`, `Add Reactions`. Open the URL to invite the bot.
+4. For AWS only: **OAuth2** gives the client ID and client secret used for login.
 
-## 2a. Deploy on AWS
-
-Needs the [SAM CLI](https://docs.aws.amazon.com/serverless-application-model/latest/developerguide/install-sam-cli.html) and the `aws-abaschen` profile.
+## Local (Docker)
 
 ```sh
-npm ci
-npm run deploy
+export DISCORD_BOT_TOKEN=xxx
+export MCP_AUTH_TOKEN=$(openssl rand -hex 32)   # optional
+docker compose up -d --build
+claude mcp add --transport http discord http://localhost:8000/mcp \
+  --header "Authorization: Bearer $MCP_AUTH_TOKEN"
 ```
 
-Set both tokens in the secret. `mcpAuthToken` is the bearer token Claude Code sends; pick a random one.
-
-```sh
-export AWS_PROFILE=aws-abaschen
-MCP_TOKEN=$(openssl rand -hex 32)
-ARN=$(aws cloudformation describe-stacks --stack-name aws-discord-mcp \
-  --query "Stacks[0].Outputs[?OutputKey=='SecretArn'].OutputValue" --output text)
-aws secretsmanager put-secret-value --secret-id "$ARN" \
-  --secret-string "{\"discordBotToken\":\"$DISCORD_BOT_TOKEN\",\"mcpAuthToken\":\"$MCP_TOKEN\"}"
-```
-
-Add it to Claude Code:
-
-```sh
-URL=$(aws cloudformation describe-stacks --stack-name aws-discord-mcp \
-  --query "Stacks[0].Outputs[?OutputKey=='McpUrl'].OutputValue" --output text)
-claude mcp add --transport http discord "$URL" --header "Authorization: Bearer $MCP_TOKEN"
-```
-
-Warm Lambdas cache the secret. After rotating it, redeploy or wait for new instances.
-
-Deploy options: `sam deploy --parameter-overrides ReadOnly=true AllowedGuilds=123,456`.
-
-## 2b. Run locally
+Or without Docker, over stdio:
 
 ```sh
 npm ci && npm run build
 claude mcp add discord -e DISCORD_BOT_TOKEN=xxx -- node "$(pwd)/dist/stdio.mjs"
 ```
 
+## AWS (AgentCore)
+
+```
+Claude Code ──OAuth (Discord login via Cognito)──▶ AgentCore Gateway ──SigV4──▶ AgentCore Runtime (container) ──▶ Discord API
+```
+
+- **Gateway**: public MCP endpoint. Validates the Cognito JWT.
+- **Cognito**: login with Discord as OIDC provider. Discord access tokens are opaque, so Cognito issues the JWT.
+- **Runtime**: runs the container. Only the Gateway role can invoke it.
+- **Secrets Manager**: bot token and Discord client secret.
+
+### 1. Secrets
+
+Create them once, as plain strings:
+
+```sh
+aws secretsmanager create-secret --name aws-discord-mcp/discord-bot-token --secret-string "$DISCORD_BOT_TOKEN"
+aws secretsmanager create-secret --name aws-discord-mcp/discord-client-secret --secret-string "$DISCORD_CLIENT_SECRET"
+```
+
+### 2. Deploy
+
+From GitHub Actions (`.github/workflows/deploy.yml`, on push to `main`), with the existing CI role. Set these repository variables:
+
+| Variable | Value |
+| --- | --- |
+| `AWS_CI_ROLE_ARN` | ARN of the CI role (GitHub OIDC) |
+| `AWS_REGION` | AgentCore region, e.g. `us-east-1` |
+| `DISCORD_CLIENT_ID` | Discord application client ID |
+| `DISCORD_READ_ONLY` | optional, `true` |
+| `DISCORD_ALLOWED_GUILDS` | optional, `id1,id2` |
+
+Or from your machine (needs Docker for the arm64 image):
+
+```sh
+npm ci
+AWS_PROFILE=aws-abaschen npx cdk deploy -c discord-client-id=<id>
+```
+
+### 3. Discord redirect
+
+Add the `DiscordRedirectUri` stack output to **OAuth2 → Redirects** of the Discord application.
+
+### 4. Claude Code
+
+```sh
+claude mcp add --transport http discord <McpUrl output> \
+  --client-id <ClientId output> --callback-port 8765
+```
+
+Then run `/mcp` in Claude Code and sign in with Discord.
+
 ## Develop
 
 ```sh
 npm test
 npm run typecheck
+npx cdk synth -c discord-client-id=0
 ```

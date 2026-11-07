@@ -1,0 +1,32 @@
+name: Deploy
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+permissions:
+  contents: read
+  id-token: write
+concurrency: deploy
+jobs:
+  ci:
+    uses: ./.github/workflows/ci.yml
+  deploy:
+    needs: ci
+    # AgentCore Runtime needs an arm64 image.
+    runs-on: ubuntu-24.04-arm
+    environment: production
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          cache: npm
+      - run: npm ci
+      - uses: aws-actions/configure-aws-credentials@v6
+        with:
+          role-to-assume: ${{ vars.AWS_CI_ROLE_ARN }}
+          aws-region: ${{ vars.AWS_REGION }}
+      - run: npx cdk deploy --require-approval never -c discord-client-id=${{ vars.DISCORD_CLIENT_ID }}
+        env:
+          READ_ONLY: ${{ vars.DISCORD_READ_ONLY }}
+          ALLOWED_GUILDS: ${{ vars.DISCORD_ALLOWED_GUILDS }}

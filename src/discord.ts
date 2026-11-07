@@ -9,18 +9,21 @@ export class DiscordError extends Error {
   }
 }
 
+export type TokenSource = string | (() => Promise<string>);
+
 export class Discord {
   constructor(
-    private token: string,
+    private token: TokenSource,
     private fetchFn: typeof fetch = fetch,
   ) {}
 
   async call<T = unknown>(method: string, path: string, body?: unknown): Promise<T> {
+    const token = typeof this.token === "string" ? this.token : await this.token();
     for (let attempt = 0; ; attempt++) {
       const res = await this.fetchFn(`${API}${path}`, {
         method,
         headers: {
-          Authorization: `Bot ${this.token}`,
+          Authorization: `Bot ${token}`,
           "Content-Type": "application/json",
           "User-Agent": "DiscordBot (https://github.com/aws-abaschen/aws-discord-mcp, 1.0.0)",
         },

@@ -2,7 +2,6 @@ import { Client } from "@modelcontextprotocol/sdk/client/index.js";
 import { InMemoryTransport } from "@modelcontextprotocol/sdk/inMemory.js";
 import { describe, expect, it, vi } from "vitest";
 import { Discord } from "../src/discord.js";
-import { authorized } from "../src/lambda.js";
 import { createServer, type Options } from "../src/server.js";
 
 const GUILD = "111111111111111111";
@@ -68,14 +67,5 @@ describe("server", () => {
     expect(JSON.parse(textOf(r)).content).toBe("hi @everyone");
     const body = JSON.parse(String(fetchFn.mock.calls.at(-1)![1]!.body));
     expect(body.allowed_mentions).toEqual({ parse: [] });
-  });
-});
-
-describe("authorized", () => {
-  it("checks the bearer token", () => {
-    expect(authorized("Bearer abc", "abc")).toBe(true);
-    expect(authorized("Bearer abd", "abc")).toBe(false);
-    expect(authorized(undefined, "abc")).toBe(false);
-    expect(authorized("Bearer ", "")).toBe(false);
   });
 });
