@@ -1,6 +1,6 @@
 import * as path from "node:path";
 import { fileURLToPath } from "node:url";
-import { Annotations, Aws, CfnOutput, Duration, RemovalPolicy, SecretValue, Stack, type StackProps } from "aws-cdk-lib";
+import { Annotations, Aws, CfnOutput, CfnParameter, Duration, RemovalPolicy, Stack, type StackProps } from "aws-cdk-lib";
 import * as agentcore from "aws-cdk-lib/aws-bedrockagentcore";
 import * as cognito from "aws-cdk-lib/aws-cognito";
 import { Platform } from "aws-cdk-lib/aws-ecr-assets";
@@ -12,8 +12,6 @@ const root = path.join(path.dirname(fileURLToPath(import.meta.url)), "..");
 export interface DiscordMcpStackProps extends StackProps {
   /** Discord application (OAuth2) client ID, used for login. */
   discordClientId: string;
-  /** Secrets Manager secret name holding the Discord OAuth2 client secret (plain string). */
-  discordClientSecretName: string;
   /** Secrets Manager secret name holding the Discord bot token (plain string). */
   botTokenSecretName: string;
   /** Local port Claude Code listens on for the OAuth callback. */
@@ -26,6 +24,14 @@ export class DiscordMcpStack extends Stack {
   constructor(scope: Construct, id: string, props: DiscordMcpStackProps) {
     super(scope, id, props);
     if (!props.discordClientId) Annotations.of(this).addError("Set DISCORD_CLIENT_ID (or -c discord-client-id=...)");
+
+    // Passed at deploy time (GitHub secret DISCORD_CLIENT_SECRET). NoEcho keeps it out of the template.
+    const clientSecret = new CfnParameter(this, "DiscordClientSecret", {
+      type: "String",
+      noEcho: true,
+      minLength: 1,
+      description: "Discord OAuth2 client secret",
+    });
 
     const botToken = secrets.Secret.fromSecretNameV2(this, "BotToken", props.botTokenSecretName);
 
@@ -42,7 +48,7 @@ export class DiscordMcpStack extends Stack {
       name: "Discord",
       issuerUrl: "https://discord.com",
       clientId: props.discordClientId,
-      clientSecret: SecretValue.secretsManager(props.discordClientSecretName).unsafeUnwrap(),
+      clientSecret: clientSecret.valueAsString,
       scopes: ["openid", "identify", "email"],
       attributeRequestMethod: cognito.OidcAttributeRequestMethod.GET,
       attributeMapping: {

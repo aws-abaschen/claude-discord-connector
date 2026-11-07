@@ -27,6 +27,7 @@ jobs:
       AWS_DEFAULT_REGION: ${{ vars.AWS_REGION }}
       ROLE_ARN: arn:aws:iam::${{ vars.AWS_ACCOUNT_ID }}:role/github-actions-discord-mcp
       DISCORD_CLIENT_ID: ${{ vars.DISCORD_CLIENT_ID }}
+      DISCORD_CLIENT_SECRET: ${{ secrets.DISCORD_CLIENT_SECRET }}
       READ_ONLY: ${{ vars.DISCORD_READ_ONLY }}
       ALLOWED_GUILDS: ${{ vars.DISCORD_ALLOWED_GUILDS }}
     steps:

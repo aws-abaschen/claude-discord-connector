@@ -14,7 +14,6 @@ const env = { account: "067751999967", region: ctx("region", process.env.AWS_REG
 new DiscordMcpStack(app, "aws-discord-mcp", {
   env,
   discordClientId: ctx("discord-client-id", ""),
-  discordClientSecretName: ctx("discord-client-secret-name", "aws-discord-mcp/discord-client-secret"),
   botTokenSecretName: ctx("bot-token-secret-name", "aws-discord-mcp/discord-bot-token"),
   callbackPort: Number(ctx("callback-port", "8765")),
   readOnly: ctx("read-only", "false") === "true",

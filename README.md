@@ -53,16 +53,17 @@ Claude Code ──OAuth (Discord login via Cognito)──▶ AgentCore Gateway �
 - **Gateway**: public MCP endpoint. Validates the Cognito JWT.
 - **Cognito**: login with Discord as OIDC provider. Discord access tokens are opaque, so Cognito issues the JWT.
 - **Runtime**: runs the container. Only the Gateway role can invoke it.
-- **Secrets Manager**: bot token and Discord client secret.
+- **Secrets Manager**: bot token. The Discord client secret is a NoEcho stack parameter.
 
 ### 1. Secrets
 
-Create them once, as plain strings:
+Bot token, in Secrets Manager (plain string), once:
 
 ```sh
 aws secretsmanager create-secret --name aws-discord-mcp/discord-bot-token --secret-string "$DISCORD_BOT_TOKEN"
-aws secretsmanager create-secret --name aws-discord-mcp/discord-client-secret --secret-string "$DISCORD_CLIENT_SECRET"
 ```
+
+Discord client secret: GitHub secret `DISCORD_CLIENT_SECRET`. The deploy passes it as a NoEcho stack parameter.
 
 ### 2. Deploy
 
@@ -72,13 +73,13 @@ One-time setup:
 
 1. `npm run ci-role` with an admin profile. It creates the GitHub Actions role.
 2. Run `just apply` in `github-config` so the repo gets its `aws` environment (`AWS_ACCOUNT_ID`, `AWS_REGION`).
-3. Add the GitHub variable `DISCORD_CLIENT_ID` (Discord application client ID). Optional: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
+3. Add the GitHub variable `DISCORD_CLIENT_ID` and the GitHub secret `DISCORD_CLIENT_SECRET`. Optional: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
 
 Or from your machine (needs Docker for the arm64 image):
 
 ```sh
 npm ci
-DISCORD_CLIENT_ID=<id> npx cdk deploy aws-discord-mcp
+DISCORD_CLIENT_ID=<id> DISCORD_CLIENT_SECRET=<secret> npm run deploy
 ```
 
 ### 3. Discord redirect

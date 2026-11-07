@@ -8,7 +8,7 @@
     "typecheck": "tsc --noEmit",
     "test": "vitest run",
     "synth": "cdk synth",
-    "deploy": "cdk deploy aws-discord-mcp --require-approval never",
+    "deploy": "cdk deploy aws-discord-mcp --require-approval never --parameters DiscordClientSecret=$DISCORD_CLIENT_SECRET",
     "ci-role": "cdk deploy DiscordMcpCiRole --require-approval broadening"
   },
   "author": "abaschen",
