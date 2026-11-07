@@ -1,4 +1,7 @@
 {
   "app": "npx tsx infra/app.ts",
+  "context": {
+    "discord-client-id": "1568616408059744377"
+  },
   "watch": { "include": ["infra/**"] }
 }

@@ -72,13 +72,15 @@ One-time setup:
 
 1. `npm run ci-role` with an admin profile. It creates the GitHub Actions role.
 2. Run `just apply` in `github-config` so the repo gets its `aws` environment (`AWS_ACCOUNT_ID`, `AWS_REGION`).
-3. Add the variable `DISCORD_CLIENT_ID` to the `aws` environment. Optional: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
+3. Optional variables in the `aws` environment: `DISCORD_READ_ONLY`, `DISCORD_ALLOWED_GUILDS`.
+
+The Discord client ID is in `cdk.json`.
 
 Or from your machine (needs Docker for the arm64 image):
 
 ```sh
 npm ci
-npx cdk deploy aws-discord-mcp -c discord-client-id=<id>
+npx cdk deploy aws-discord-mcp
 ```
 
 ### 3. Discord redirect
@@ -99,5 +101,5 @@ Then run `/mcp` in Claude Code and sign in with Discord.
 ```sh
 npm test
 npm run typecheck
-npx cdk synth -c discord-client-id=0
+npx cdk synth
 ```

@@ -25,7 +25,7 @@ export interface DiscordMcpStackProps extends StackProps {
 export class DiscordMcpStack extends Stack {
   constructor(scope: Construct, id: string, props: DiscordMcpStackProps) {
     super(scope, id, props);
-    if (!props.discordClientId) Annotations.of(this).addError("Set the Discord client ID: -c discord-client-id=...");
+    if (!props.discordClientId) Annotations.of(this).addError("Set discord-client-id in cdk.json");
 
     const botToken = secrets.Secret.fromSecretNameV2(this, "BotToken", props.botTokenSecretName);
 
