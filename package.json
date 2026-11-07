@@ -1,0 +1,41 @@
+{
+  "name": "aws-discord-mcp",
+  "version": "1.0.0",
+  "description": "Discord MCP server for Claude Code, hosted on Amazon Bedrock AgentCore",
+  "scripts": {
+    "build": "rm -rf dist && esbuild src/main.ts src/stdio.ts --bundle --platform=node --target=node24 --format=esm --outdir=dist --out-extension:.js=.mjs --sourcemap --banner:js=\"import{createRequire}from'node:module';const require=createRequire(import.meta.url);\"",
+    "start": "node --enable-source-maps dist/main.mjs",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "synth": "cdk synth",
+    "deploy": "cdk deploy aws-discord-mcp --require-approval never --parameters DiscordClientSecret=$DISCORD_CLIENT_SECRET",
+    "ci-role": "cdk deploy DiscordMcpCiRole --require-approval broadening"
+  },
+  "author": "abaschen",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1164.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.6",
+    "aws-cdk": "^2.1148.0",
+    "aws-cdk-lib": "^2.275.0",
+    "constructs": "^10.8.1",
+    "esbuild": "^0.28.2",
+    "tsx": "^4.23.15",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "type": "module",
+  "bin": {
+    "aws-discord-mcp": "dist/stdio.mjs"
+  },
+  "files": [
+    "dist"
+  ],
+  "engines": {
+    "node": ">=24"
+  }
+}

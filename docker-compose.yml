@@ -1,0 +1,10 @@
+services:
+  discord-mcp:
+    build: .
+    ports:
+      - "127.0.0.1:8000:8000"
+    environment:
+      DISCORD_BOT_TOKEN: ${DISCORD_BOT_TOKEN:?set DISCORD_BOT_TOKEN}
+      MCP_AUTH_TOKEN: ${MCP_AUTH_TOKEN:-}
+      DISCORD_READ_ONLY: ${DISCORD_READ_ONLY:-false}
+      DISCORD_ALLOWED_GUILDS: ${DISCORD_ALLOWED_GUILDS:-}
