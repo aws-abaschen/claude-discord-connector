@@ -1,0 +1,35 @@
+{
+  "name": "claude-discord-connector",
+  "version": "1.0.0",
+  "description": "Discord MCP connector for Claude Code, serverless on AWS Lambda",
+  "scripts": {
+    "build": "rm -rf dist && esbuild src/lambda.ts --bundle --platform=node --target=node24 --format=esm --external:@aws-sdk/* --minify --sourcemap --outfile=dist/lambda/index.mjs --banner:js=\"import{createRequire}from'module';const require=createRequire(import.meta.url);\" && esbuild src/stdio.ts --bundle --platform=node --target=node22 --format=esm --outfile=dist/stdio.mjs --banner:js=\"#!/usr/bin/env node\"",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "deploy": "npm run build && sam deploy"
+  },
+  "author": "abaschen",
+  "license": "MIT",
+  "dependencies": {
+    "@aws-sdk/client-secrets-manager": "^3.1164.0",
+    "@modelcontextprotocol/sdk": "^1.32.2",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@types/aws-lambda": "^8.10.164",
+    "@types/node": "^26.6.6",
+    "esbuild": "^0.28.2",
+    "typescript": "^7.0.2",
+    "vitest": "^5.1.0"
+  },
+  "type": "module",
+  "bin": {
+    "claude-discord-connector": "dist/stdio.mjs"
+  },
+  "files": [
+    "dist/stdio.mjs"
+  ],
+  "engines": {
+    "node": ">=22"
+  }
+}

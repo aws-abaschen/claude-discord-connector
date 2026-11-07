@@ -1,0 +1,63 @@
+AWSTemplateFormatVersion: "2010-09-09"
+Transform: AWS::Serverless-2016-10-31
+Description: Discord MCP connector for Claude Code
+
+Parameters:
+  ReadOnly:
+    Type: String
+    AllowedValues: ["true", "false"]
+    Default: "false"
+    Description: Only expose read tools
+  AllowedGuilds:
+    Type: String
+    Default: ""
+    Description: Comma separated guild IDs. Empty allows all guilds the bot is in.
+
+Resources:
+  Secret:
+    Type: AWS::SecretsManager::Secret
+    Properties:
+      Description: JSON with discordBotToken and mcpAuthToken. Set after deploy.
+      SecretString: '{"discordBotToken":"","mcpAuthToken":""}'
+
+  Function:
+    Type: AWS::Serverless::Function
+    Properties:
+      CodeUri: dist/lambda
+      Handler: index.handler
+      Runtime: nodejs24.x
+      Architectures: [arm64]
+      MemorySize: 256
+      Timeout: 30
+      Environment:
+        Variables:
+          SECRET_ARN: !Ref Secret
+          NODE_OPTIONS: --enable-source-maps
+          DISCORD_READ_ONLY: !Ref ReadOnly
+          DISCORD_ALLOWED_GUILDS: !Ref AllowedGuilds
+      Policies:
+        - AWSSecretsManagerGetSecretValuePolicy:
+            SecretArn: !Ref Secret
+      FunctionUrlConfig:
+        AuthType: NONE # bearer token checked in code
+
+  # Public function URLs also need lambda:InvokeFunction.
+  FunctionUrlInvokePermission:
+    Type: AWS::Lambda::Permission
+    Properties:
+      FunctionName: !Ref Function
+      Action: lambda:InvokeFunction
+      Principal: "*"
+      InvokedViaFunctionUrl: true
+
+  LogGroup:
+    Type: AWS::Logs::LogGroup
+    Properties:
+      LogGroupName: !Sub /aws/lambda/${Function}
+      RetentionInDays: 14
+
+Outputs:
+  McpUrl:
+    Value: !GetAtt FunctionUrl.FunctionUrl
+  SecretArn:
+    Value: !Ref Secret
